@@ -19,8 +19,8 @@ sold_files = [
 ]
 
 # Check that files were found
-print(f"Number of Listings files found: {len(listings_files)}")
-print(f"Number of Sold files found: {len(sold_files)}")
+print(f"Number of Listings files found: {len(listings_files)}") # 28 files found (Jan 2024 - Apr 2026)
+print(f"Number of Sold files found: {len(sold_files)}") # 28 files found (Jan 2024 - Apr 2026)
 
 # Add up all rows from the individual files to verify against the concatenated DataFrames
 total_listings_rows = sum(
@@ -34,7 +34,7 @@ total_sold_rows = sum(
 )
 
 print(f"Total rows from individual Listings files: {total_listings_rows}")
-print(f"Total rows from individual Sold files: {total_sold_rows}")
+print(f"Total rows from individual Sold files: {total_sold_rows}") 
 
 # Read and concatenate Listings files
 listings_df = pd.concat(
@@ -96,3 +96,17 @@ sold_df.to_csv(sold_output_path, index=False)
 
 print(f"Filtered Listings saved to: {listings_output_path}")
 print(f"Filtered Sold saved to: {sold_output_path}")
+
+# Outputs:
+
+# Total rows from individual Listings files: 860898
+# Total rows from individual Sold files: 615707
+
+# Total rows in Listings DataFrame before Residential filter: 860898
+# Total rows in Sold DataFrame before Residential filter: 615707
+
+# > All rows from before concatenation remain after concatenation
+
+
+# Total rows in Listings DataFrame after Residential filter: 757780
+# Total rows in Sold DataFrame after Residential filter: 571490
