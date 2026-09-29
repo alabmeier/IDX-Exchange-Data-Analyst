@@ -60,42 +60,35 @@ print(
 )
 
 # Filter dataframes to only include Residential properties
-listings_df = listings_df[
-    listings_df["PropertyType"].str.contains(
-        "Residential",
-        case=False,
-        na=False
-    )
+filtered_listings_df = listings_df[
+    listings_df["PropertyType"] == "Residential"
 ]
 
-sold_df = sold_df[
-    sold_df["PropertyType"].str.contains(
-        "Residential",
-        case=False,
-        na=False
-    )
+filtered_sold_df = sold_df[
+    sold_df["PropertyType"] == "Residential"
 ]
 
 # Print row counts after Residential filter
 print(
     f"Total rows in Listings DataFrame after Residential filter: "
-    f"{len(listings_df)}"
+    f"{len(filtered_listings_df)}"
 )
 
 print(
     f"Total rows in Sold DataFrame after Residential filter: "
-    f"{len(sold_df)}"
+    f"{len(filtered_sold_df)}"
 )
 
-# Save the filtered DataFrames to new CSV files
-listings_output_path = os.path.join(folder_path, "filtered_listings.csv")
-sold_output_path = os.path.join(folder_path, "filtered_sold.csv")
+# Save the DataFrames to new CSV files
+listings_output_path = os.path.join(folder_path, "listings.csv")
+sold_output_path = os.path.join(folder_path, "sold.csv")
 
 listings_df.to_csv(listings_output_path, index=False)
 sold_df.to_csv(sold_output_path, index=False)
 
-print(f"Filtered Listings saved to: {listings_output_path}")
-print(f"Filtered Sold saved to: {sold_output_path}")
+print(f"Listings saved to: {listings_output_path}")
+print(f"Sold saved to: {sold_output_path}")
+
 
 # Outputs:
 
@@ -108,5 +101,5 @@ print(f"Filtered Sold saved to: {sold_output_path}")
 # > All rows from before concatenation remain after concatenation
 
 
-# Total rows in Listings DataFrame after Residential filter: 757780
-# Total rows in Sold DataFrame after Residential filter: 571490
+# Total rows in Listings DataFrame after Residential filter: 547162
+# Total rows in Sold DataFrame after Residential filter: 414054
