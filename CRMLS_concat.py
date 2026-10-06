@@ -1,105 +1,101 @@
-import pandas as pd
 import glob
 import os
+import pandas as pd
 
-# Ask for the folder containing the monthly CSV files
+# =============================================================================
+# CONFIG
+# =============================================================================
+# Output files written by this script (and by the EDA script). They are excluded
+# when searching for monthly files so re-running never double-counts rows.
+OUTPUT_FILENAMES = {
+    "listings.csv", "sold.csv",
+    "residential_listings.csv", "residential_sold.csv",
+}
+
+def header(title):
+    print(f"\n{'=' * 70}\n{title}\n{'=' * 70}")
+
+def load_and_concat(files):
+    """Read each file once, report per-file rows, and return (combined_df, total_rows)."""
+    frames = []
+    for file in files:
+        df = pd.read_csv(file, low_memory=False)
+        print(f"  {os.path.basename(file)}: {len(df):,} rows")
+        frames.append(df)
+
+    total_rows = sum(len(df) for df in frames)
+    combined = pd.concat(frames, ignore_index=True)
+    return combined, total_rows
+
+# =============================================================================
+# 1. LOCATE MONTHLY FILES
+# =============================================================================
 folder_path = input("Enter the path to the folder containing the monthly CSV files: ")
 
-csv_files = glob.glob(os.path.join(folder_path, "*.csv"))
+csv_files = sorted(
+    f for f in glob.glob(os.path.join(folder_path, "*.csv"))
+    if os.path.basename(f).lower() not in OUTPUT_FILENAMES
+)
 
 # Separate Listings and Sold files
-listings_files = [
-    file for file in csv_files
-    if "listing" in os.path.basename(file).lower()
-]
+listings_files = [f for f in csv_files if "listing" in os.path.basename(f).lower()]
+sold_files = [f for f in csv_files if "sold" in os.path.basename(f).lower()]
 
-sold_files = [
-    file for file in csv_files
-    if "sold" in os.path.basename(file).lower()
-]
+header("FILES FOUND")
+print(f"Number of Listings files found: {len(listings_files)}")  # 28 expected (Jan 2024 - Apr 2026)
+print(f"Number of Sold files found: {len(sold_files)}")          # 28 expected (Jan 2024 - Apr 2026)
 
-# Check that files were found
-print(f"Number of Listings files found: {len(listings_files)}") # 28 files found (Jan 2024 - Apr 2026)
-print(f"Number of Sold files found: {len(sold_files)}") # 28 files found (Jan 2024 - Apr 2026)
+if not listings_files or not sold_files:
+    raise SystemExit("Missing Listings or Sold files. Check the folder path and file names.")
 
-# Add up all rows from the individual files to verify against the concatenated DataFrames
-total_listings_rows = sum(
-    len(pd.read_csv(file, low_memory=False))
-    for file in listings_files
-)
+# =============================================================================
+# 2. READ AND CONCATENATE
+# =============================================================================
+header("LISTINGS - INDIVIDUAL FILES")
+listings_df, total_listings_rows = load_and_concat(listings_files)
 
-total_sold_rows = sum(
-    len(pd.read_csv(file, low_memory=False))
-    for file in sold_files
-)
+header("SOLD - INDIVIDUAL FILES")
+sold_df, total_sold_rows = load_and_concat(sold_files)
 
-print(f"Total rows from individual Listings files: {total_listings_rows}")
-print(f"Total rows from individual Sold files: {total_sold_rows}") 
+# =============================================================================
+# 3. VERIFY ROW COUNTS (individual files vs. concatenated)
+# =============================================================================
+header("ROW COUNT VERIFICATION")
+print(f"Total rows from individual Listings files: {total_listings_rows:,}")
+print(f"Total rows from individual Sold files: {total_sold_rows:,}")
+print(f"Total rows in Listings DataFrame before Residential filter: {len(listings_df):,}")
+print(f"Total rows in Sold DataFrame before Residential filter: {len(sold_df):,}")
 
-# Read and concatenate Listings files
-listings_df = pd.concat(
-    (pd.read_csv(file, low_memory=False) for file in listings_files),
-    ignore_index=True
-)
+for name, expected, actual in [
+    ("Listings", total_listings_rows, len(listings_df)),
+    ("Sold", total_sold_rows, len(sold_df)),
+]:
+    status = "OK - all rows retained" if expected == actual else "MISMATCH - rows were lost or added"
+    print(f"{name}: {status}")
 
-# Read and concatenate Sold files
-sold_df = pd.concat(
-    (pd.read_csv(file, low_memory=False) for file in sold_files),
-    ignore_index=True
-)
+# =============================================================================
+# 4. RESIDENTIAL FILTER
+# =============================================================================
+filtered_listings_df = listings_df[listings_df["PropertyType"] == "Residential"]
+filtered_sold_df = sold_df[sold_df["PropertyType"] == "Residential"]
 
-# Print row counts after concatenation
-print(
-    f"Total rows in Listings DataFrame before Residential filter: "
-    f"{len(listings_df)}"
-)
+header("RESIDENTIAL FILTER")
+print(f"Total rows in Listings DataFrame after Residential filter: {len(filtered_listings_df):,}")
+print(f"Total rows in Sold DataFrame after Residential filter: {len(filtered_sold_df):,}")
 
-print(
-    f"Total rows in Sold DataFrame before Residential filter: "
-    f"{len(sold_df)}"
-)
-
-# Filter dataframes to only include Residential properties
-filtered_listings_df = listings_df[
-    listings_df["PropertyType"] == "Residential"
-]
-
-filtered_sold_df = sold_df[
-    sold_df["PropertyType"] == "Residential"
-]
-
-# Print row counts after Residential filter
-print(
-    f"Total rows in Listings DataFrame after Residential filter: "
-    f"{len(filtered_listings_df)}"
-)
-
-print(
-    f"Total rows in Sold DataFrame after Residential filter: "
-    f"{len(filtered_sold_df)}"
-)
-
-# Save the DataFrames to new CSV files
+# =============================================================================
+# 5. SAVE COMBINED DATASETS
+# =============================================================================
 listings_output_path = os.path.join(folder_path, "listings.csv")
 sold_output_path = os.path.join(folder_path, "sold.csv")
 
 listings_df.to_csv(listings_output_path, index=False)
 sold_df.to_csv(sold_output_path, index=False)
 
+header("DONE")
 print(f"Listings saved to: {listings_output_path}")
 print(f"Sold saved to: {sold_output_path}")
 
-
-# Outputs:
-
-# Total rows from individual Listings files: 860898
-# Total rows from individual Sold files: 615707
-
-# Total rows in Listings DataFrame before Residential filter: 860898
-# Total rows in Sold DataFrame before Residential filter: 615707
-
-# > All rows from before concatenation remain after concatenation
-
-
-# Total rows in Listings DataFrame after Residential filter: 547162
-# Total rows in Sold DataFrame after Residential filter: 414054
+# Previous results for reference:
+# Listings: 860,898 rows total -> 547,162 Residential
+# Sold:     615,707 rows total -> 414,054 Residential
