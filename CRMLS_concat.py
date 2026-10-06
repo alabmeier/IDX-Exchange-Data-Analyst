@@ -5,11 +5,12 @@ import pandas as pd
 # =============================================================================
 # CONFIG
 # =============================================================================
-# Output files written by this script (and by the EDA script). They are excluded
+# Output files written by scripts in this project. They are excluded
 # when searching for monthly files so re-running never double-counts rows.
 OUTPUT_FILENAMES = {
     "listings.csv", "sold.csv",
     "residential_listings.csv", "residential_sold.csv",
+    "listings_with_rates.csv", "sold_with_rates.csv"
 }
 
 def header(title):
