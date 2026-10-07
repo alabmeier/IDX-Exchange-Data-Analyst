@@ -10,7 +10,8 @@ import pandas as pd
 OUTPUT_FILENAMES = {
     "listings.csv", "sold.csv",
     "residential_listings.csv", "residential_sold.csv",
-    "listings_with_rates.csv", "sold_with_rates.csv"
+    "listings_with_rates.csv", "sold_with_rates.csv",
+    "listings_clean.csv", "sold_clean.csv"
 }
 
 def header(title):

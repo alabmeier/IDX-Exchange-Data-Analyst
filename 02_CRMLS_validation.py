@@ -17,7 +17,7 @@ KEY_NUMERIC = [
     "DaysOnMarket", "YearBuilt",
 ]
 
-# Core fields are kept even if heavily missing (add/remove as needed)
+# Core fields are kept even if heavily missing
 CORE_FIELDS = set(KEY_NUMERIC) | {
     "PropertyType", "PropertySubType", "StandardStatus", "CloseDate",
     "ListingContractDate", "PurchaseContractDate", "CountyOrParish", "City",
